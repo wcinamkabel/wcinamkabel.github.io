@@ -1,10 +1,10 @@
-﻿
+﻿ď»ż
 <!DOCTYPE html>
 <html lang="pl">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Moxfield â†’ Archidekt â€” konwerter tagĂłw</title>
+<title>Moxfield Ă˘â€ â€™ Archidekt Ă˘â‚¬â€ť konwerter tagÄ‚Ĺ‚w</title>
 <link rel="stylesheet" href="../assets/styles.css">
 </head>
 <body>
@@ -13,14 +13,14 @@
 
 <div class="wrap container">
   <header>
-    <h1>Moxfield â†’ Archidekt</h1>
-    <p>Wklej decklistÄ™ wyeksportowanÄ… z Moxfielda (z tagami) â€” narzÄ™dzie zamieni jÄ… na format importu Archidekta, przenoszÄ…c tagi jako kategorie <code>[Tag1,Tag2]</code>. Wszystko liczy siÄ™ lokalnie w przeglÄ…darce.</p>
+    <h1>Moxfield Ă˘â€ â€™ Archidekt</h1>
+    <p>Wklej decklistĂ„â„˘ wyeksportowanĂ„â€¦ z Moxfielda (z tagami) Ă˘â‚¬â€ť narzĂ„â„˘dzie zamieni jĂ„â€¦ na format importu Archidekta, przenoszĂ„â€¦c tagi jako kategorie <code>[Tag1,Tag2]</code>. Wszystko liczy siĂ„â„˘ lokalnie w przeglĂ„â€¦darce.</p>
   </header>
 
   <div class="columns">
     <div class="panel">
-      <h2>WejĹ›cie â€” lista z Moxfielda</h2>
-      <textarea id="input" placeholder="Wklej tutaj listÄ™ z Moxfielda, np:\n1 Sol Ring (cmm) 396 #!Ramp\n1 Atraxa, Praetors' Voice (cmm) 1 #Commander\n3 Brainstorm #Draw #Card Advantage"></textarea>
+      <h2>WejÄąâ€şcie Ă˘â‚¬â€ť lista z Moxfielda</h2>
+      <textarea id="input" placeholder="Wklej tutaj listĂ„â„˘ z Moxfielda, np:\n1 Sol Ring (cmm) 396 #!Ramp\n1 Atraxa, Praetors' Voice (cmm) 1 #Commander\n3 Brainstorm #Draw #Card Advantage"></textarea>
       <div class="row">
         <label class="opt">Format:
           <select id="formatSelect" style="margin-left:6px;">
@@ -29,26 +29,26 @@
             <option value="csv">CSV</option>
           </select>
         </label>
-        <button class="btn-ghost btn-sm" id="loadExample" type="button">Wstaw przykĹ‚ad</button>
-        <button class="btn-ghost btn-sm" id="clearAll" type="button">WyczyĹ›Ä‡</button>
+        <button class="btn-ghost btn-sm" id="loadExample" type="button">Wstaw przykÄąâ€šad</button>
+        <button class="btn-ghost btn-sm" id="clearAll" type="button">WyczyÄąâ€şĂ„â€ˇ</button>
       </div>
       <div class="row">
-        <label class="opt"><input type="checkbox" id="optSetCollector" checked> doĹ‚Ä…cz set i numer kolekcjonerski</label>
-        <label class="opt"><input type="checkbox" id="optCommanderTag" checked> dodaj kategoriÄ™ <code>[Commander]</code> dla commandera</label>
+        <label class="opt"><input type="checkbox" id="optSetCollector" checked> doÄąâ€šĂ„â€¦cz set i numer kolekcjonerski</label>
+        <label class="opt"><input type="checkbox" id="optCommanderTag" checked> dodaj kategoriĂ„â„˘ <code>[Commander]</code> dla commandera</label>
       </div>
       <div class="row">
-        <button class="btn-primary" id="convertBtn" type="button">Konwertuj â†’</button>
+        <button class="btn-primary" id="convertBtn" type="button">Konwertuj Ă˘â€ â€™</button>
       </div>
     </div>
 
     <div class="panel">
-      <h2>WyjĹ›cie â€” do wklejenia w Archidekt</h2>
-      <textarea id="output" readonly placeholder="Tu pojawi siÄ™ lista gotowa do importu w Archidektâ€¦"></textarea>
+      <h2>WyjÄąâ€şcie Ă˘â‚¬â€ť do wklejenia w Archidekt</h2>
+      <textarea id="output" readonly placeholder="Tu pojawi siĂ„â„˘ lista gotowa do importu w ArchidektĂ˘â‚¬Â¦"></textarea>
       <div class="row between">
         <div>
           <button class="btn-ghost btn-sm" id="copyBtn" type="button">Skopiuj</button>
           <button class="btn-ghost btn-sm" id="downloadBtn" type="button">Pobierz .txt</button>
-          <span class="copied" id="copiedMsg" style="display:none;">Skopiowano âś“</span>
+          <span class="copied" id="copiedMsg" style="display:none;">Skopiowano Ă˘Ĺ›â€ś</span>
         </div>
       </div>
       <div class="stats" id="stats"></div>
@@ -57,13 +57,13 @@
   </div>
 
   <div class="panel">
-    <h2>PodglÄ…d rozpoznanych kart</h2>
+    <h2>PodglĂ„â€¦d rozpoznanych kart</h2>
     <div class="tbl-wrap">
       <table>
         <thead>
-          <tr><th>IloĹ›Ä‡</th><th>Karta</th><th>Set</th><th>Nr</th><th>Foil</th><th>Sekcja</th><th>Tagi â†’ kategorie</th></tr>
+          <tr><th>IloÄąâ€şĂ„â€ˇ</th><th>Karta</th><th>Set</th><th>Nr</th><th>Foil</th><th>Sekcja</th><th>Tagi Ă˘â€ â€™ kategorie</th></tr>
         </thead>
-        <tbody id="previewBody"><tr><td colspan="7" class="dim">Brak danych â€” wklej listÄ™ i kliknij â€žKonwertujâ€ť.</td></tr></tbody>
+        <tbody id="previewBody"><tr><td colspan="7" class="dim">Brak danych Ă˘â‚¬â€ť wklej listĂ„â„˘ i kliknij Ă˘â‚¬ĹľKonwertujĂ˘â‚¬ĹĄ.</td></tr></tbody>
       </table>
     </div>
   </div>
@@ -71,18 +71,18 @@
 
 <footer class="container">
   <div class="panel">
-    <h3>Jak tego uĹĽyÄ‡</h3>
+    <h3>Jak tego uÄąÄ˝yĂ„â€ˇ</h3>
     <ol>
-      <li>W Moxfieldzie otwĂłrz taliÄ™ â†’ <b>Bulk Edit</b> (lub Export) i skopiuj listÄ™ z wĹ‚Ä…czonymi tagami â€” linie wyglÄ…dajÄ… jak <code>1 Sol Ring (cmm) 396 #!Ramp</code>.</li>
-      <li>Wklej to po lewej, kliknij <b>Konwertuj</b>, sprawdĹş podglÄ…d kart poniĹĽej.</li>
-      <li>Skopiuj wynik (prawa strona) i wklej w Archidekt: <b>Import</b> â†’ wklej tekst â†’ Import.</li>
+      <li>W Moxfieldzie otwÄ‚Ĺ‚rz taliĂ„â„˘ Ă˘â€ â€™ <b>Bulk Edit</b> (lub Export) i skopiuj listĂ„â„˘ z wÄąâ€šĂ„â€¦czonymi tagami Ă˘â‚¬â€ť linie wyglĂ„â€¦dajĂ„â€¦ jak <code>1 Sol Ring (cmm) 396 #!Ramp</code>.</li>
+      <li>Wklej to po lewej, kliknij <b>Konwertuj</b>, sprawdÄąĹź podglĂ„â€¦d kart poniÄąÄ˝ej.</li>
+      <li>Skopiuj wynik (prawa strona) i wklej w Archidekt: <b>Import</b> Ă˘â€ â€™ wklej tekst Ă˘â€ â€™ Import.</li>
     </ol>
     <h3>Uwagi</h3>
     <ul>
-      <li>Tagi lokalne (<code>#tag</code>) i globalne (<code>#!tag</code>) z Moxfielda sÄ… Ĺ‚Ä…czone w jednÄ… listÄ™ kategorii Archidekta â€” Archidekt nie rozrĂłĹĽnia tych dwĂłch typĂłw.</li>
-      <li><b>Foil</b> nie jest automatycznie zapisywany w tekĹ›cie wyjĹ›ciowym â€” karty oznaczone foilem sÄ… widoczne w podglÄ…dzie.</li>
-      <li>Sekcje <code>Sideboard</code> / <code>Maybeboard</code> z Moxfielda sÄ… wykrywane i widoczne w podglÄ…dzie, ale nie sÄ… automatycznie kodowane w eksporcie.</li>
-      <li>Wszystko dziaĹ‚a offline, w samej przeglÄ…darce â€” moĹĽna zapisaÄ‡ ten plik i otwieraÄ‡ lokalnie.</li>
+      <li>Tagi lokalne (<code>#tag</code>) i globalne (<code>#!tag</code>) z Moxfielda sĂ„â€¦ Äąâ€šĂ„â€¦czone w jednĂ„â€¦ listĂ„â„˘ kategorii Archidekta Ă˘â‚¬â€ť Archidekt nie rozrÄ‚Ĺ‚ÄąÄ˝nia tych dwÄ‚Ĺ‚ch typÄ‚Ĺ‚w.</li>
+      <li><b>Foil</b> nie jest automatycznie zapisywany w tekÄąâ€şcie wyjÄąâ€şciowym Ă˘â‚¬â€ť karty oznaczone foilem sĂ„â€¦ widoczne w podglĂ„â€¦dzie.</li>
+      <li>Sekcje <code>Sideboard</code> / <code>Maybeboard</code> z Moxfielda sĂ„â€¦ wykrywane i widoczne w podglĂ„â€¦dzie, ale nie sĂ„â€¦ automatycznie kodowane w eksporcie.</li>
+      <li>Wszystko dziaÄąâ€ša offline, w samej przeglĂ„â€¦darce Ă˘â‚¬â€ť moÄąÄ˝na zapisaĂ„â€ˇ ten plik i otwieraĂ„â€ˇ lokalnie.</li>
     </ul>
   </div>
 </footer>
@@ -193,7 +193,7 @@
         name = cardPart.slice(0, setMatch.index).trim();
         const after = cardPart.slice(setMatch.index + setMatch[0].length).trim();
         if (after){
-          const collMatch = after.match(/^([A-Za-z0-9â…]+)/);
+          const collMatch = after.match(/^([A-Za-z0-9Ă˘Ââ€¦]+)/);
           if (collMatch) collector = collMatch[1];
         }
       }
@@ -225,7 +225,7 @@
     const collectorIdx = idx('collector number','collector_number');
 
     if (nameIdx === -1){
-      warnings.push('Nie znaleziono kolumny "Name" w CSV â€” sprawdĹş nagĹ‚Ăłwek pliku.');
+      warnings.push('Nie znaleziono kolumny "Name" w CSV Ă˘â‚¬â€ť sprawdÄąĹź nagÄąâ€šÄ‚Ĺ‚wek pliku.');
       return { cards, warnings };
     }
 
@@ -288,7 +288,7 @@
       outputEl.value = '';
       statsEl.innerHTML = '';
       warnBox.style.display = 'none';
-      previewBody.innerHTML = '<tr><td colspan="7" class="dim">Brak danych â€” wklej listÄ™ i kliknij â€žKonwertujâ€ť.</td></tr>';
+      previewBody.innerHTML = '<tr><td colspan="7" class="dim">Brak danych Ă˘â‚¬â€ť wklej listĂ„â„˘ i kliknij Ă˘â‚¬ĹľKonwertujĂ˘â‚¬ĹĄ.</td></tr>';
       return;
     }
 
@@ -307,22 +307,22 @@
     const totalCards = cards.reduce((s, c) => s + c.qty, 0);
     const allTags = dedupe(cards.flatMap(c => c.tags.map(t => sanitizeCategory(t.name))).filter(Boolean));
     statsEl.innerHTML =
-      'Rozpoznane wpisy: <b>' + cards.length + '</b> &nbsp;Â·&nbsp; ' +
-      'Suma kart: <b>' + totalCards + '</b> &nbsp;Â·&nbsp; ' +
+      'Rozpoznane wpisy: <b>' + cards.length + '</b> &nbsp;Ă‚Â·&nbsp; ' +
+      'Suma kart: <b>' + totalCards + '</b> &nbsp;Ă‚Â·&nbsp; ' +
       'Unikalne tagi: <b>' + allTags.length + '</b>' +
-      (warnings.length ? ' &nbsp;Â·&nbsp; PominiÄ™te linie: <b>' + warnings.length + '</b>' : '');
+      (warnings.length ? ' &nbsp;Ă‚Â·&nbsp; PominiĂ„â„˘te linie: <b>' + warnings.length + '</b>' : '');
 
     if (warnings.length){
       warnBox.style.display = 'block';
-      warnBox.innerHTML = 'PominiÄ™to ' + warnings.length + ' linii (nagĹ‚Ăłwki lub nierozpoznany format):<ul>' +
+      warnBox.innerHTML = 'PominiĂ„â„˘to ' + warnings.length + ' linii (nagÄąâ€šÄ‚Ĺ‚wki lub nierozpoznany format):<ul>' +
         warnings.slice(0, 8).map(w => '<li>' + escapeHtml(w) + '</li>').join('') +
-        (warnings.length > 8 ? '<li>â€¦</li>' : '') + '</ul>';
+        (warnings.length > 8 ? '<li>Ă˘â‚¬Â¦</li>' : '') + '</ul>';
     } else {
       warnBox.style.display = 'none';
     }
 
     if (!cards.length){
-      previewBody.innerHTML = '<tr><td colspan="7" class="dim">Nie rozpoznano ĹĽadnych kart. SprawdĹş format wejĹ›ciowy.</td></tr>';
+      previewBody.innerHTML = '<tr><td colspan="7" class="dim">Nie rozpoznano ÄąÄ˝adnych kart. SprawdÄąĹź format wejÄąâ€şciowy.</td></tr>';
     } else {
       previewBody.innerHTML = cards.map(c => {
         const tagChips = c.tags.map(t => '<span class="chip">' + escapeHtml(sanitizeCategory(t.name)) + '</span>').join('');
@@ -330,11 +330,11 @@
         return '<tr>' +
           '<td class="mono center">' + c.qty + '</td>' +
           '<td>' + escapeHtml(c.name) + '</td>' +
-          '<td class="mono">' + (c.set ? c.set : '<span class="dim">â€”</span>') + '</td>' +
-          '<td class="mono">' + (c.collector ? c.collector : '<span class="dim">â€”</span>') + '</td>' +
-          '<td class="center">' + (c.foil ? '<span class="yes">âś“</span>' : '<span class="dim">â€”</span>') + '</td>' +
+          '<td class="mono">' + (c.set ? c.set : '<span class="dim">Ă˘â‚¬â€ť</span>') + '</td>' +
+          '<td class="mono">' + (c.collector ? c.collector : '<span class="dim">Ă˘â‚¬â€ť</span>') + '</td>' +
+          '<td class="center">' + (c.foil ? '<span class="yes">Ă˘Ĺ›â€ś</span>' : '<span class="dim">Ă˘â‚¬â€ť</span>') + '</td>' +
           '<td class="dim">' + c.section + '</td>' +
-          '<td>' + (tagChips || cmdChip ? (tagChips + cmdChip) : '<span class="dim">â€”</span>') + '</td>' +
+          '<td>' + (tagChips || cmdChip ? (tagChips + cmdChip) : '<span class="dim">Ă˘â‚¬â€ť</span>') + '</td>' +
           '</tr>';
       }).join('');
     }
