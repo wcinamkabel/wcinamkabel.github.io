@@ -1,5 +1,7 @@
-/* Cobalt-like dark theme inspired stylesheet for Toolbox
-   Includes layout and component styles used by the Moxfield → Archidekt tool
+/*
+  Główne zmienne i styl dla całej strony.
+  Ten arkusz definiuje kolorystykę, układ i wygląd komponentów
+  używanych na stronie głównej oraz w narzędziach.
 */
 :root{
   --bg:#071327; /* deep cobalt */
@@ -15,26 +17,49 @@
   --danger:#ff7b7b;
   --mono: ui-monospace, 'SF Mono', 'JetBrains Mono', 'Fira Code', Menlo, Consolas, monospace;
   --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, system-ui, sans-serif;
+  --font-sans: var(--sans);
+  --font-mono: var(--mono);
+  --color-text-primary: var(--text);
+  --color-text-secondary: var(--text-dim);
+  --color-text-warning: var(--accent);
+  --color-text-success: var(--success);
+  --color-text-info: var(--accent);
+  --color-background-primary: var(--panel-2);
+  --color-background-secondary: var(--panel);
+  --color-background-warning: rgba(72,192,255,0.12);
+  --color-background-success: rgba(111,227,193,0.12);
+  --color-background-info: rgba(72,192,255,0.08);
+  --color-border-tertiary: var(--border);
+  --border-radius-lg: 14px;
 }
 *{box-sizing:border-box}
 html,body{height:100%;margin:0;font-family:var(--sans);background:linear-gradient(180deg,var(--bg) 0%, #021324 100%);color:var(--text);display:flex;flex-direction:column;}
 body{min-height:100vh}
+
+/* Layout głównej treści i kontenerów strony */
 .container{max-width:1180px;margin:0 auto;padding:28px 22px}
 main.container{flex:1;display:flex;align-items:center;justify-content:center;}
-.site-header{border-bottom:1px solid rgba(255,255,255,0.03);padding:20px 0}
+.site-header{border-bottom:1px solid rgba(255,255,255,0.03);padding:20px 0;position:relative}
+.site-header .container,
+.site-footer .container{display:flex;flex-direction:column;align-items:center;gap:10px}
 .header-inner,.foot-inner{display:flex;align-items:center;justify-content:space-between}
-.logo{font-weight:700;font-size:20px;letter-spacing:0.4px;margin:0}
+/* Nagłówek strony i pasek nawigacyjny */
+.logo{font-weight:700;font-size:40px;letter-spacing:0.4px;margin:0}
 .main-nav a{color:var(--text-dim);text-decoration:none;margin-left:14px;padding:8px 10px;border-radius:8px}
 .main-nav a.active{background:rgba(72,192,255,0.08);color:var(--accent)}
-.hero{background:linear-gradient(90deg, rgba(72,192,255,0.04), transparent);padding:26px;border-radius:12px;border:1px solid var(--border);margin-bottom:18px}
-.hero h2{margin:0 0 6px;font-size:18px}
-.hero p{margin:0 0 12px;color:var(--text-dim)}
+.back-link{position:absolute;top:18px;left:22px;color:var(--text-dim);text-decoration:none;font-size:13px;display:inline-flex;align-items:center;padding:8px 11px;border-radius:8px;background:rgba(255,255,255,0.03);transition:background .15s,color .15s}
+.back-link:hover{background:rgba(72,192,255,0.1);color:var(--accent)}
+
+/* Sekcja hero na stronie głównej oraz stronach narzędzi */
+.hero{background:linear-gradient(90deg, rgba(72,192,255,0.04), transparent);padding:26px;border-radius:12px;border:1px solid var(--border);margin-bottom:18px;text-align:center}
+.hero h2{margin:0 0 6px;font-size:27px;line-height:1.1}
+.hero p{margin:0 auto 12px;color:var(--text-dim);max-width:760px}
 .note{color:var(--muted);font-size:13px}
 .btn-primary{display:inline-block;background:var(--accent);color:#002033;padding:10px 14px;border-radius:8px;text-decoration:none;font-weight:700}
 .about-panel{background:var(--panel);border:1px solid var(--border);padding:14px;border-radius:10px}
 .site-footer{padding:18px 0;color:var(--text-dim)}
 
-/* Tool-specific styles (copied from original tool and adapted) */
+/* Dodatkowe style narzędziowe i komponentów wewnętrznych */
 .pips{height:5px;display:flex;margin-bottom:10px;border-radius:6px;overflow:hidden}
 .pips span{flex:1}
 .pips .w{background:#fef5d6}
@@ -42,16 +67,19 @@ main.container{flex:1;display:flex;align-items:center;justify-content:center;}
 .pips .b{background:#3b3b40}
 .pips .r{background:#b3493a}
 .pips .g{background:#3f7a4f}
+/* Kontenery dla narzędzi i panele wewnętrzne */
 .wrap{max-width:1180px;margin:0 auto;padding:0 22px}
 .panel{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:16px}
 .panel h2{font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:var(--text-dim);margin:0 0 10px;font-weight:600}
 .columns{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start;margin-bottom:18px}
 @media (max-width:880px){.columns{grid-template-columns:1fr}}
+/* Formularze i kontrolki wejściowe */
 textarea{width:100%;height:380px;resize:vertical;background:var(--panel-2);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:12px;font-family:var(--mono);font-size:13px;line-height:1.55;outline:none}
 textarea:focus{box-shadow:0 0 0 3px rgba(72,192,255,0.06);border-color:var(--accent)}
 textarea[readonly]{color:#cfd8e5}
 .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:10px}
 .row.between{justify-content:space-between}
+/* Etykiety, przyciski i wybory */
 label.opt{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text-dim);cursor:pointer}
 label.opt input{accent-color:var(--accent)}
 select,.seg{background:var(--panel-2);border:1px solid var(--border);color:var(--text);border-radius:6px;font-size:13px;padding:6px 8px}
