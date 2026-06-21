@@ -1,0 +1,329 @@
+
+<style>
+@keyframes spin { to { transform: rotate(360deg); } }
+.spin { animation: spin 1s linear infinite; display: inline-block; }
+.th-sort { cursor: pointer; user-select: none; }
+.th-sort:hover { color: var(--color-text-primary) !important; }
+.card-row:hover { background: var(--color-background-secondary) !important; }
+</style>
+
+<h2 class="sr-only">Sorter kolekcji MTG według ranku EDHREC — wgraj CSV, pobierz ranki ze Scryfall, posortuj</h2>
+
+<div id="root" style="padding:1rem 0;font-family:var(--font-sans);"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script>
+const { useState, useCallback, useRef } = React;
+const BATCH = 75;
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+const TIERS = [
+  { max:200,    label:"Staple",   range:"#1–200",       bg:"var(--color-background-warning)", text:"var(--color-text-warning)" },
+  { max:1000,   label:"Popular",  range:"#201–1 000",   bg:"var(--color-background-success)", text:"var(--color-text-success)" },
+  { max:5000,   label:"Moderate", range:"#1 001–5 000", bg:"var(--color-background-info)",    text:"var(--color-text-info)"    },
+  { max:1/0,    label:"Niche",    range:"#5 001+",      bg:"var(--color-background-secondary)",text:"var(--color-text-secondary)"},
+];
+
+const MANA = {
+  W:{ bg:"#FAEEDA", color:"#633806" },
+  U:{ bg:"#E6F1FB", color:"#0C447C" },
+  B:{ bg:"#D3D1C7", color:"#2C2C2A" },
+  R:{ bg:"#FAECE7", color:"#4A1B0C" },
+  G:{ bg:"#EAF3DE", color:"#173404" },
+};
+
+function detectCols(headers) {
+  const lo = headers.map(h => String(h).toLowerCase().trim());
+  const nIdx = lo.findIndex(h => ["name","card name","card_name","cardname","title","nazwa"].includes(h));
+  const cIdx = lo.findIndex(h => ["count","qty","quantity","amount","copies","ilość","ilosc","liczba"].includes(h));
+  return { nameCol: nIdx>=0 ? headers[nIdx] : headers[0], countCol: cIdx>=0 ? headers[cIdx] : null };
+}
+
+function getTier(rank) {
+  if (rank===null||rank===undefined) return null;
+  return TIERS.find(t => rank<=t.max) || TIERS[3];
+}
+
+function Pill({ rank }) {
+  const t = getTier(rank);
+  if (!t) return React.createElement("span", { style:{ color:"var(--color-text-secondary)", fontSize:"12px" } }, "—");
+  return React.createElement("span", {
+    style:{
+      display:"inline-block", background:t.bg, color:t.text,
+      padding:"2px 8px", borderRadius:"999px",
+      fontFamily:"var(--font-mono)", fontSize:"12px", fontWeight:"500", whiteSpace:"nowrap",
+    }
+  }, "#" + rank.toLocaleString("pl-PL"));
+}
+
+function ColorDots({ colors }) {
+  if (!colors.length) return React.createElement("span", { style:{ color:"var(--color-text-secondary)", fontSize:"13px" } }, "◇");
+  return React.createElement("div", { style:{ display:"flex", gap:"3px", flexWrap:"wrap" } },
+    colors.map(c => {
+      const m = MANA[c] || { bg:"#D3D1C7", color:"#2C2C2A" };
+      return React.createElement("span", { key:c, style:{
+        display:"inline-flex", alignItems:"center", justifyContent:"center",
+        width:"18px", height:"18px", borderRadius:"50%",
+        background:m.bg, color:m.color, fontSize:"9px", fontWeight:"500",
+      }}, c);
+    })
+  );
+}
+
+function App() {
+  const [phase, setPhase] = useState("upload");
+  const [prog, setProg] = useState({ done:0, total:0 });
+  const [results, setResults] = useState([]);
+  const [errMsg, setErrMsg] = useState("");
+  const [sortField, setSortField] = useState("edhrec_rank");
+  const [sortDir, setSortDir] = useState("asc");
+  const [filter, setFilter] = useState("");
+  const [drag, setDrag] = useState(false);
+  const fileRef = useRef();
+
+  const processFile = useCallback(file => {
+    if (!file) return;
+    if (!file.name.endsWith(".csv") && file.type!=="text/csv") {
+      setErrMsg("Wybierz plik .csv"); setPhase("error"); return;
+    }
+    Papa.parse(file, {
+      header:true, skipEmptyLines:true,
+      complete: async ({ data }) => {
+        if (!data.length) { setErrMsg("Plik CSV jest pusty."); setPhase("error"); return; }
+        const hdrs = Object.keys(data[0]);
+        const { nameCol, countCol } = detectCols(hdrs);
+        const map = new Map();
+        data.forEach(row => {
+          const name = row[nameCol]?.trim(); if (!name) return;
+          const cnt = countCol ? (parseInt(row[countCol])||1) : 1;
+          map.has(name) ? (map.get(name).count+=cnt) : map.set(name, { name, count:cnt });
+        });
+        await fetchRanks(Array.from(map.values()));
+      },
+      error: e => { setErrMsg("Błąd parsowania: "+e.message); setPhase("error"); }
+    });
+  }, []);
+
+  async function fetchRanks(cardList) {
+    setPhase("loading"); setProg({ done:0, total:cardList.length });
+    const batches=[];
+    for (let i=0; i<cardList.length; i+=BATCH) batches.push(cardList.slice(i,i+BATCH));
+    const sfMap=new Map();
+    for (let i=0; i<batches.length; i++) {
+      if (i>0) await sleep(150);
+      try {
+        const r = await fetch("https://api.scryfall.com/cards/collection", {
+          method:"POST", headers:{"Content-Type":"application/json"},
+          body: JSON.stringify({ identifiers: batches[i].map(c=>({ name:c.name })) })
+        });
+        if (!r.ok) throw new Error("HTTP "+r.status);
+        const d = await r.json();
+        (d.data||[]).forEach(c => sfMap.set(c.name.toLowerCase(), c));
+        setProg({ done: Math.min((i+1)*BATCH, cardList.length), total: cardList.length });
+      } catch(e) { setErrMsg("Błąd Scryfall: "+e.message); setPhase("error"); return; }
+    }
+    setResults(cardList.map(({ name, count }) => {
+      const sf = sfMap.get(name.toLowerCase());
+      return {
+        name, count,
+        edhrec_rank: sf?.edhrec_rank ?? null,
+        type_line: sf?.type_line ?? "",
+        colors: sf?.color_identity ?? [],
+        url: sf?.scryfall_uri ?? "https://scryfall.com/search?q="+encodeURIComponent(name),
+      };
+    }));
+    setPhase("done");
+  }
+
+  function handleSort(f) {
+    if (f===sortField) setSortDir(d => d==="asc"?"desc":"asc");
+    else { setSortField(f); setSortDir("asc"); }
+  }
+
+  const withRank = results.filter(c => c.edhrec_rank!==null);
+  const avgRank = withRank.length ? Math.round(withRank.reduce((s,c)=>s+c.edhrec_rank,0)/withRank.length) : 0;
+  const top500 = withRank.filter(c => c.edhrec_rank<=500).length;
+
+  const sorted = [...results]
+    .filter(c => !filter || c.name.toLowerCase().includes(filter.toLowerCase()))
+    .sort((a,b) => {
+      if (sortField==="name") { const v=a.name.localeCompare(b.name,"pl"); return sortDir==="asc"?v:-v; }
+      if (sortField==="count") return sortDir==="asc"?a.count-b.count:b.count-a.count;
+      if (a.edhrec_rank===null && b.edhrec_rank===null) return 0;
+      if (a.edhrec_rank===null) return 1; if (b.edhrec_rank===null) return -1;
+      return sortDir==="asc"?a.edhrec_rank-b.edhrec_rank:b.edhrec_rank-a.edhrec_rank;
+    });
+
+  function exportCSV() {
+    const rows=["EDHREC Rank,Nazwa,Ilość,Typ",...sorted.map(c=>`${c.edhrec_rank??"brak"},"${c.name}",${c.count},"${c.type_line}"`)].join("\n");
+    const a=Object.assign(document.createElement("a"),{
+      href:URL.createObjectURL(new Blob([rows],{type:"text/csv"})),
+      download:"kolekcja_edhrec.csv"
+    }); a.click();
+  }
+
+  function SortIcon({ f }) {
+    if (f!==sortField) return React.createElement("i",{ className:"ti ti-arrows-sort", style:{ fontSize:"11px",opacity:0.3 }, "aria-hidden":"true" });
+    return React.createElement("i",{ className:`ti ti-arrow-${sortDir==="asc"?"up":"down"}`, style:{ fontSize:"11px" }, "aria-hidden":"true" });
+  }
+
+  const thStyle = f => ({
+    padding:"8px 12px", textAlign:"left", fontSize:"12px", fontWeight:"500",
+    borderBottom:"0.5px solid var(--color-border-tertiary)",
+    background:"var(--color-background-secondary)",
+    whiteSpace:"nowrap",
+    color: sortField===f ? "var(--color-text-info)" : "var(--color-text-secondary)",
+  });
+
+  if (phase==="upload"||phase==="error") return React.createElement("div", {
+    onClick:()=>fileRef.current?.click(),
+    onDrop:e=>{ e.preventDefault(); setDrag(false); processFile(e.dataTransfer.files[0]); },
+    onDragOver:e=>{ e.preventDefault(); setDrag(true); },
+    onDragLeave:()=>setDrag(false),
+    style:{
+      border:`1.5px dashed ${drag?"var(--color-border-info)":"var(--color-border-secondary)"}`,
+      borderRadius:"var(--border-radius-lg)", padding:"48px 32px",
+      textAlign:"center", cursor:"pointer",
+      background: drag?"var(--color-background-info)":"transparent",
+      transition:"all 0.15s",
+    }
+  },
+    React.createElement("i",{ className:"ti ti-file-import", style:{ fontSize:"36px",color:"var(--color-text-secondary)",display:"block",marginBottom:"12px" }, "aria-hidden":"true" }),
+    React.createElement("p",{ style:{ fontSize:"16px",fontWeight:"500",margin:"0 0 6px",color:"var(--color-text-primary)" } }, "Wrzuć plik CSV z kolekcją"),
+    React.createElement("p",{ style:{ fontSize:"13px",color:"var(--color-text-secondary)",margin:"0 0 20px" } }, "Obsługuje eksporty z Moxfield, Archidekt, Deckbox i innych"),
+    React.createElement("button",{},
+      React.createElement("i",{ className:"ti ti-upload", "aria-hidden":"true", style:{ marginRight:"6px" } }), "Wybierz plik .csv"
+    ),
+    phase==="error" && React.createElement("p",{ style:{ color:"var(--color-text-danger)",marginTop:"14px",fontSize:"13px" } }, errMsg),
+    React.createElement("input",{ ref:fileRef, type:"file", accept:".csv", onChange:e=>processFile(e.target.files[0]), style:{ display:"none" } })
+  );
+
+  if (phase==="loading") return React.createElement("div",{ style:{ textAlign:"center",padding:"48px 0" } },
+    React.createElement("i",{ className:"ti ti-loader-2 spin", style:{ fontSize:"28px",color:"var(--color-text-secondary)",display:"block",marginBottom:"14px" }, "aria-hidden":"true" }),
+    React.createElement("p",{ style:{ color:"var(--color-text-secondary)",fontSize:"14px",marginBottom:"14px" } },
+      "Pobieranie danych ze Scryfall... "+prog.done+" / "+prog.total
+    ),
+    React.createElement("div",{ style:{ background:"var(--color-background-secondary)",borderRadius:"999px",height:"6px",maxWidth:"320px",margin:"0 auto" } },
+      React.createElement("div",{ style:{
+        background:"var(--color-background-warning)", height:"6px", borderRadius:"999px",
+        width:(prog.total ? Math.round((prog.done/prog.total)*100) : 0)+"%",
+        transition:"width 0.3s ease",
+      }})
+    )
+  );
+
+  return React.createElement("div",{},
+    React.createElement("div",{
+      style:{ display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(110px,1fr))",gap:"10px",marginBottom:"16px" }
+    },
+      [
+        { label:"Unikalne karty", val:results.length, tier:null },
+        { label:"Top 500 EDHREC", val:top500, tier:TIERS[0] },
+        { label:"Średni rank",    val:avgRank.toLocaleString("pl-PL"), tier:null },
+        { label:"Bez ranku EDH", val:results.length-withRank.length, tier:null },
+      ].map(({ label,val,tier })=>React.createElement("div",{
+        key:label,
+        style:{
+          background: tier?tier.bg:"var(--color-background-secondary)",
+          borderRadius:"var(--border-radius-md)", padding:"12px 14px",
+        }
+      },
+        React.createElement("div",{ style:{ fontSize:"22px",fontWeight:"500",color:tier?tier.text:"var(--color-text-primary)" }}, val),
+        React.createElement("div",{ style:{ fontSize:"11px",color:tier?tier.text:"var(--color-text-secondary)",marginTop:"3px",opacity:tier?0.8:1 }}, label)
+      ))
+    ),
+
+    React.createElement("div",{ style:{ display:"flex",gap:"6px",flexWrap:"wrap",marginBottom:"12px",alignItems:"center" } },
+      React.createElement("span",{ style:{ fontSize:"11px",color:"var(--color-text-secondary)",marginRight:"2px" } },"Ranki:"),
+      ...TIERS.map(t=>React.createElement("span",{
+        key:t.label,
+        style:{ fontSize:"11px",padding:"2px 9px",borderRadius:"999px",background:t.bg,color:t.text,fontWeight:"500" }
+      }, t.label+" "+t.range)),
+      React.createElement("span",{
+        style:{ fontSize:"11px",padding:"2px 9px",borderRadius:"999px",background:"var(--color-background-secondary)",color:"var(--color-text-secondary)",fontWeight:"500" }
+      }, "Bez ranku")
+    ),
+
+    React.createElement("div",{ style:{ display:"flex",gap:"8px",flexWrap:"wrap",alignItems:"center",marginBottom:"12px" } },
+      React.createElement("div",{ style:{ position:"relative" } },
+        React.createElement("i",{ className:"ti ti-search", "aria-hidden":"true", style:{
+          position:"absolute",left:"10px",top:"50%",transform:"translateY(-50%)",
+          color:"var(--color-text-secondary)",fontSize:"14px",pointerEvents:"none",
+        }}),
+        React.createElement("input",{
+          value:filter, onChange:e=>setFilter(e.target.value),
+          placeholder:"Szukaj po nazwie...",
+          "aria-label":"Filtruj karty po nazwie",
+          style:{ paddingLeft:"32px",width:"200px" }
+        })
+      ),
+      React.createElement("span",{ style:{ fontSize:"13px",color:"var(--color-text-secondary)" }}, sorted.length+" kart"),
+      React.createElement("button",{ onClick:exportCSV, style:{ marginLeft:"auto" } },
+        React.createElement("i",{ className:"ti ti-download","aria-hidden":"true",style:{ marginRight:"6px" }}), "Eksportuj CSV"
+      ),
+      React.createElement("button",{ onClick:()=>{ setPhase("upload"); setResults([]); setFilter(""); }},
+        React.createElement("i",{ className:"ti ti-refresh","aria-hidden":"true",style:{ marginRight:"6px" }}), "Nowy plik"
+      )
+    ),
+
+    React.createElement("div",{ style:{ overflowX:"auto",borderRadius:"var(--border-radius-lg)",border:"0.5px solid var(--color-border-tertiary)" }},
+      React.createElement("table",{ style:{ width:"100%",borderCollapse:"collapse",fontSize:"13px",tableLayout:"fixed" }},
+        React.createElement("colgroup",{},
+          React.createElement("col",{ style:{ width:"130px" }}),
+          React.createElement("col",{}),
+          React.createElement("col",{ style:{ width:"55px" }}),
+          React.createElement("col",{ style:{ width:"160px" }}),
+          React.createElement("col",{ style:{ width:"72px" }})
+        ),
+        React.createElement("thead",{},
+          React.createElement("tr",{},
+            [
+              { key:"edhrec_rank", label:"EDHREC rank" },
+              { key:"name",        label:"Nazwa karty" },
+              { key:"count",       label:"Ilość" },
+              { key:"type_line",   label:"Typ", nosort:true },
+              { key:"colors",      label:"Kolory", nosort:true },
+            ].map(col=>React.createElement("th",{
+              key:col.key,
+              className: col.nosort?"":"th-sort",
+              onClick:()=>!col.nosort&&handleSort(col.key),
+              style:thStyle(col.key),
+            }, col.label, " ", !col.nosort&&React.createElement(SortIcon,{ f:col.key })))
+          )
+        ),
+        React.createElement("tbody",{},
+          sorted.length===0 && React.createElement("tr",{},
+            React.createElement("td",{ colSpan:5,style:{ padding:"24px",textAlign:"center",color:"var(--color-text-secondary)",fontSize:"13px" }},
+              "Brak kart pasujących do filtra"
+            )
+          ),
+          sorted.map((card,i)=>React.createElement("tr",{
+            key:card.name, className:"card-row",
+            style:{
+              background: i%2===0 ? "var(--color-background-primary)" : "var(--color-background-secondary)",
+              borderBottom:"0.5px solid var(--color-border-tertiary)",
+            }
+          },
+            React.createElement("td",{ style:{ padding:"9px 12px" }}, React.createElement(Pill,{ rank:card.edhrec_rank })),
+            React.createElement("td",{ style:{ padding:"9px 12px",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" }},
+              React.createElement("a",{
+                href:card.url, rel:"noopener",
+                style:{ color:"var(--color-text-primary)",textDecoration:"none",fontWeight:"500" }
+              }, card.name),
+              " ",
+              React.createElement("i",{ className:"ti ti-external-link","aria-hidden":"true",style:{ fontSize:"10px",opacity:0.35 }})
+            ),
+            React.createElement("td",{ style:{ padding:"9px 12px",color:"var(--color-text-secondary)",fontFamily:"var(--font-mono)",fontSize:"12px",textAlign:"center" }}, "×"+card.count),
+            React.createElement("td",{ style:{ padding:"9px 12px",color:"var(--color-text-secondary)",fontSize:"12px",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" }}, card.type_line||"—"),
+            React.createElement("td",{ style:{ padding:"9px 12px" }}, React.createElement(ColorDots,{ colors:card.colors }))
+          ))
+        )
+      )
+    )
+  );
+}
+
+ReactDOM.render(React.createElement(App), document.getElementById("root"));
+</script>
