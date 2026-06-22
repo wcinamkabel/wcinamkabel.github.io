@@ -18,8 +18,8 @@
 
 <div class="wrap container">
   <section class="hero">
-    <h2>bulkranking</h2>
-    <p>Sorter kolekcji MTG według ranku EDHREC — wgraj CSV, pobierz ranki ze Scryfall, posortuj i pobierz gotowy plik.</p>
+    <h2>How does it work?</h2>
+    <p>This tool works by uploading a CSV file of your Magic: The Gathering collection, fetching popularity rankings from EDHREC, and sorting your cards by popularity.</p>
   </section>
 
   <div class="panel">
@@ -28,7 +28,7 @@
 
   <footer class="site-footer">
     <div class="container foot-inner">
-      <p>wcinamkabel 2026</p>
+      <p>Made with ❤️ by abel</p>
     </div>
   </footer>
 </div>
@@ -213,10 +213,10 @@ function App() {
     }
   },
     React.createElement("i",{ className:"ti ti-file-import", style:{ fontSize:"36px",color:"var(--color-text-secondary)",display:"block",marginBottom:"12px" }, "aria-hidden":"true" }),
-    React.createElement("p",{ style:{ fontSize:"16px",fontWeight:"500",margin:"0 0 6px",color:"var(--color-text-primary)" } }, "Wrzuć plik CSV z kolekcją"),
-    React.createElement("p",{ style:{ fontSize:"13px",color:"var(--color-text-secondary)",margin:"0 0 20px" } }, "Obsługuje eksporty z Moxfield, Archidekt, Deckbox i innych"),
+    React.createElement("p",{ style:{ fontSize:"16px",fontWeight:"500",margin:"0 0 6px",color:"var(--color-text-primary)" } }, "Upload CSV File"),
+    React.createElement("p",{ style:{ fontSize:"13px",color:"var(--color-text-secondary)",margin:"0 0 20px" } }, "Supports exports from Moxfield, Archidekt, Deckbox and others"),
     React.createElement("button",{},
-      React.createElement("i",{ className:"ti ti-upload", "aria-hidden":"true", style:{ marginRight:"6px" } }), "Wybierz plik .csv"
+      React.createElement("i",{ className:"ti ti-upload", "aria-hidden":"true", style:{ marginRight:"6px" } }), "Choose .csv File"
     ),
     phase==="error" && React.createElement("p",{ style:{ color:"var(--color-text-danger)",marginTop:"14px",fontSize:"13px" } }, errMsg),
     React.createElement("input",{ ref:fileRef, type:"file", accept:".csv", onChange:e=>processFile(e.target.files[0]), style:{ display:"none" } })

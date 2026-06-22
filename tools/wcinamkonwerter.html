@@ -4,13 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>wcinamkonwerter — wcinamkabel's tools</title>
-<meta name="description" content="Wklej listę z Moxfielda i skonwertuj ją na format importu Archidekta, zachowując tagi jako kategorie." />
+<meta name="description" content="Paste a Moxfield list and convert it into an Archidekt import format, preserving tags as categories." />
 <link rel="stylesheet" href="../assets/styles.css">
 </head>
 <body>
   <header class="site-header">
   <div class="container">
-    <a class="back-link" href="../index.html">← Strona główna</a>
+    <a class="back-link" href="../index.html">← Home</a>
     <h1 class="logo"><img src="../assets/wcinamwcinam.png" alt="wcinamkabel's tools" class="logo-img"></h1>
   </div>
 </header>
@@ -19,42 +19,42 @@
 
 <div class="wrap container">
   <section class="hero">
-    <h2>wcinamkonwerter</h2>
-    <p>Wklej decklistę wyeksportowaną z Moxfielda (z tagami) — narzędzie zamieni ją na format importu Archidekta, przenosząc tagi jako kategorie <code>[Tag1,Tag2]</code>. Wszystko liczy się lokalnie w przeglądarce.</p>
+    <h2>How does it work?</h2>
+    <p>This tool allows you to convert decklists from Moxfield into a format suitable for importing into Archidekt, preserving tags as categories.</p>
   </section>
 
   <div class="columns">
     <div class="panel">
-      <h2>Wejście — lista z Moxfielda</h2>
-      <textarea id="input" placeholder="Wklej tutaj listę z Moxfielda, np.:&#10;1 Sol Ring (cmm) 396 #!Ramp&#10;1 Atraxa, Praetors' Voice (cmm) 1 #Commander&#10;3 Brainstorm #Draw #Card Advantage"></textarea>
+      <h2>Input — Moxfield list</h2>
+      <textarea id="input" placeholder="Paste your Moxfield list here, e.g.:&#10;1 Sol Ring (cmm) 396 #!Ramp&#10;1 Atraxa, Praetors' Voice (cmm) 1 #Commander&#10;3 Brainstorm #Draw #Card Advantage"></textarea>
       <div class="row">
         <label class="opt">Format:
           <select id="formatSelect" style="margin-left:6px;">
-            <option value="auto" selected>auto-wykrywanie</option>
-            <option value="text">tekst (bulk/eksport tekstowy)</option>
+            <option value="auto" selected>auto-detect</option>
+            <option value="text">text (bulk/text export)</option>
             <option value="csv">CSV</option>
           </select>
         </label>
-        <button class="btn-ghost btn-sm" id="loadExample" type="button">Wstaw przykład</button>
-        <button class="btn-ghost btn-sm" id="clearAll" type="button">Wyczyść</button>
+        <button class="btn-ghost btn-sm" id="loadExample" type="button">Load example</button>
+        <button class="btn-ghost btn-sm" id="clearAll" type="button">Clear all</button>
       </div>
       <div class="row">
-        <label class="opt"><input type="checkbox" id="optSetCollector" checked> dołącz set i numer kolekcjonerski</label>
-        <label class="opt"><input type="checkbox" id="optCommanderTag" checked> dodaj kategorię <code>[Commander]</code> dla commandera</label>
+        <label class="opt"><input type="checkbox" id="optSetCollector" checked> include set and collector number</label>
+        <label class="opt"><input type="checkbox" id="optCommanderTag" checked> add category <code>[Commander]</code> for commander</label>
       </div>
       <div class="row">
-        <button class="btn-primary" id="convertBtn" type="button">Konwertuj →</button>
+        <button class="btn-primary" id="convertBtn" type="button">Convert →</button>
       </div>
     </div>
 
     <div class="panel">
-      <h2>Wyjście — do wklejenia w Archidekt</h2>
-      <textarea id="output" readonly placeholder="Tu pojawi się lista gotowa do importu w Archidekt…"></textarea>
+      <h2>Output — paste into Archidekt</h2>
+      <textarea id="output" readonly placeholder="Your Archidekt-ready list will appear here…"></textarea>
       <div class="row between">
         <div>
-          <button class="btn-ghost btn-sm" id="copyBtn" type="button">Skopiuj</button>
-          <button class="btn-ghost btn-sm" id="downloadBtn" type="button">Pobierz .txt</button>
-          <span class="copied" id="copiedMsg" style="display:none;">Skopiowano ✓</span>
+          <button class="btn-ghost btn-sm" id="copyBtn" type="button">Copy</button>
+          <button class="btn-ghost btn-sm" id="downloadBtn" type="button">Download .txt</button>
+          <span class="copied" id="copiedMsg" style="display:none;">Copied ✓</span>
         </div>
       </div>
       <div class="stats" id="stats"></div>
@@ -63,13 +63,13 @@
   </div>
 
   <div class="panel">
-    <h2>Podgląd rozpoznanych kart</h2>
+    <h2>Preview of recognized cards</h2>
     <div class="tbl-wrap">
       <table>
         <thead>
-          <tr><th>Ilość</th><th>Karta</th><th>Set</th><th>Nr</th><th>Foil</th><th>Sekcja</th><th>Tagi → kategorie</th></tr>
+          <tr><th>Qty</th><th>Card</th><th>Set</th><th>No.</th><th>Foil</th><th>Section</th><th>Tags → categories</th></tr>
         </thead>
-        <tbody id="previewBody"><tr><td colspan="7" class="dim">Brak danych — wklej listę i kliknij „Konwertuj”.</td></tr></tbody>
+        <tbody id="previewBody"><tr><td colspan="7" class="dim">No data — paste a list and click “Convert”.</td></tr></tbody>
       </table>
     </div>
   </div>
@@ -77,7 +77,7 @@
 
 <footer class="site-footer">
   <div class="container foot-inner">
-    <p>wcinamkabel 2026</p>
+    <p> Made with ❤️ by abel </p>
   </div>
 </footer>
 
@@ -221,7 +221,7 @@
     const collectorIdx = idx('collector number','collector_number');
 
     if (nameIdx === -1){
-      warnings.push('Nie znaleziono kolumny "Name" w CSV — sprawdź nagłówek pliku.');
+      'CSV header missing "Name" column — check the file header.';
       return { cards, warnings };
     }
 
@@ -284,7 +284,7 @@
       outputEl.value = '';
       statsEl.innerHTML = '';
       warnBox.style.display = 'none';
-      previewBody.innerHTML = '<tr><td colspan="7" class="dim">Brak danych — wklej listę i kliknij „Konwertuj”.</td></tr>';
+      previewBody.innerHTML = '<tr><td colspan="7" class="dim">No data — paste a list and click “Convert”.</td></tr>';
       return;
     }
 
@@ -303,14 +303,14 @@
     const totalCards = cards.reduce((s, c) => s + c.qty, 0);
     const allTags = dedupe(cards.flatMap(c => c.tags.map(t => sanitizeCategory(t.name))).filter(Boolean));
     statsEl.innerHTML =
-      'Rozpoznane wpisy: <b>' + cards.length + '</b> &nbsp;·&nbsp; ' +
-      'Suma kart: <b>' + totalCards + '</b> &nbsp;·&nbsp; ' +
-      'Unikalne tagi: <b>' + allTags.length + '</b>' +
-      (warnings.length ? ' &nbsp;·&nbsp; Pominięte linie: <b>' + warnings.length + '</b>' : '');
+      'Recognized entries: <b>' + cards.length + '</b> &nbsp;·&nbsp; ' +
+      'Total cards: <b>' + totalCards + '</b> &nbsp;·&nbsp; ' +
+      'Unique tags: <b>' + allTags.length + '</b>' +
+      (warnings.length ? ' &nbsp;·&nbsp; Skipped lines: <b>' + warnings.length + '</b>' : '');
 
     if (warnings.length){
       warnBox.style.display = 'block';
-      warnBox.innerHTML = 'Pominięto ' + warnings.length + ' linii (nagłówki lub nierozpoznany format):<ul>' +
+      warnBox.innerHTML = 'Skipped ' + warnings.length + ' lines (headers or unrecognized format):<ul>' +
         warnings.slice(0, 8).map(w => '<li>' + escapeHtml(w) + '</li>').join('') +
         (warnings.length > 8 ? '<li>…</li>' : '') + '</ul>';
     } else {
@@ -318,7 +318,7 @@
     }
 
     if (!cards.length){
-      previewBody.innerHTML = '<tr><td colspan="7" class="dim">Nie rozpoznano żadnych kart. Sprawdź format wejściowy.</td></tr>';
+      previewBody.innerHTML = '<tr><td colspan="7" class="dim">No cards were recognized. Check the input format.</td></tr>';
     } else {
       previewBody.innerHTML = cards.map(c => {
         const tagChips = c.tags.map(t => '<span class="chip">' + escapeHtml(sanitizeCategory(t.name)) + '</span>').join('');
