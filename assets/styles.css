@@ -60,12 +60,7 @@ body {
         background-color 0.35s ease,
         color 0.35s ease;
 }
-body::after {
-  content: "";
-  display: block;
-  height: 60px; /* Przestrzeń, w którą "wjedzie" elastyczny scroll */
-  pointer-events: none;
-}
+
 * {
     transition:
         background-color 0.25s ease,
@@ -163,6 +158,7 @@ main.container {
         padding: 8px 12px;
         font-size: 12px;
     }
+    
 }
 @media (max-width: 480px) {
     .logo-img {
@@ -541,6 +537,13 @@ label.opt {
 }
 label.opt input {
     accent-color: var(--accent);
+}
+/* Zmiana stylu dla aktywnego pola wyszukiwania */
+input:focus {
+  outline: none; /* Usuwa domyślny obrys przeglądarki */
+  border: 1px solid var(--accent) !important; /* Zmienia kolor ramki na kolor akcentu */
+  background-color: var(--panel) !important; /* Zmienia tło na inny kolor po kliknięciu */
+  box-shadow: 0 0 0 2px rgba(72, 192, 255, 0.2); /* Dodaje delikatną poświatę (opcjonalnie) */
 }
 select,
 .seg {
