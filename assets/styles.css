@@ -701,13 +701,21 @@ main.wrap.container > * {
     margin-top: auto !important;
     margin-bottom: auto !important;
 }
-html, body {
-    height: auto !important; /* Usuwa sztywne ograniczenie wysokości */
+html {
+    background-color: #071327 !important; /* Barwi strefę odskoku (overscroll) na ciemny kolor */
+    background-image: 
+        radial-gradient(circle at top right, rgba(72,192,255,0.14), transparent 16%),
+        radial-gradient(circle at bottom left, rgba(111,227,193,0.08), transparent 20%),
+        linear-gradient(180deg, var(--bg) 0%, #021324 100%) !important;
+    background-attachment: fixed !important;
+    min-height: 100vh !important;
 }
 
 body {
-    min-height: 100vh !important; /* Wymusza wysokość co najmniej całego ekranu */
-    background-attachment: fixed !important; /* Blokuje gradient, by nie uciekał przy scrollowaniu */
+    min-height: 100vh !important;
+    height: auto !important;
+    margin: 0;
+    background: transparent !important; /* Sprawia, że ciemne tło z html prześwituje pod spodem */
 }
 /* 1. Wymuszenie idealnego podziału 50/50 w poziomie i równej wysokości kolumn */
 .columns {

@@ -3,11 +3,12 @@
 <head>
 
 <title>bulkranking :3</title>
-<meta name="description" content="Wczytaj CSV kolekcji MTG, pobierz ranki EDHREC ze Scryfall i posortuj karty według popularności." />
+<meta name="description" content="Load CSV file of your Magic: The Gathering collection, fetch popularity rankings from EDHREC, and sort your cards by popularity." />
 <link rel="icon" href="../assets/wicinamobrys.ico" type="image/x-icon">
 <link rel="stylesheet" href="../assets/styles.css">
 <style>
   </head>
+  
 <body>
 @keyframes spin { to { transform: rotate(360deg); } }
 .spin { animation: spin 1s linear infinite; display: inline-block; }
@@ -115,12 +116,12 @@ function App() {
   const processFile = useCallback(file => {
     if (!file) return;
     if (!file.name.endsWith(".csv") && file.type!=="text/csv") {
-      setErrMsg("Wybierz plik .csv"); setPhase("error"); return;
+      setErrMsg("Choose a .csv file"); setPhase("error"); return;
     }
     Papa.parse(file, {
       header:true, skipEmptyLines:true,
       complete: async ({ data }) => {
-        if (!data.length) { setErrMsg("Plik CSV jest pusty."); setPhase("error"); return; }
+        if (!data.length) { setErrMsg("The CSV file is empty."); setPhase("error"); return; }
         const hdrs = Object.keys(data[0]);
         const { nameCol, countCol } = detectCols(hdrs);
         const map = new Map();
@@ -131,7 +132,7 @@ function App() {
         });
         await fetchRanks(Array.from(map.values()));
       },
-      error: e => { setErrMsg("Błąd parsowania: "+e.message); setPhase("error"); }
+      error: e => { setErrMsg("Error parsing CSV: "+e.message); setPhase("error"); }
     });
   }, []);
 
@@ -151,7 +152,7 @@ function App() {
         const d = await r.json();
         (d.data||[]).forEach(c => sfMap.set(c.name.toLowerCase(), c));
         setProg({ done: Math.min((i+1)*BATCH, cardList.length), total: cardList.length });
-      } catch(e) { setErrMsg("Błąd Scryfall: "+e.message); setPhase("error"); return; }
+      } catch(e) { setErrMsg("Error fetching Scryfall data: "+e.message); setPhase("error"); return; }
     }
     setResults(cardList.map(({ name, count }) => {
       const sf = sfMap.get(name.toLowerCase());
@@ -232,7 +233,7 @@ function App() {
   if (phase==="loading") return React.createElement("div",{ style:{ textAlign:"center",padding:"48px 0" } },
     React.createElement("i",{ className:"ti ti-loader-2 spin", style:{ fontSize:"28px",color:"var(--color-text-secondary)",display:"block",marginBottom:"14px" }, "aria-hidden":"true" }),
     React.createElement("p",{ style:{ color:"var(--color-text-secondary)",fontSize:"14px",marginBottom:"14px" } },
-      "Pobieranie danych ze Scryfall... "+prog.done+" / "+prog.total
+      "Fetching data from Scryfall... "+prog.done+" / "+prog.total
     ),
     React.createElement("div",{ style:{ background:"var(--color-background-secondary)",borderRadius:"999px",height:"6px",maxWidth:"320px",margin:"0 auto" } },
       React.createElement("div",{ style:{
@@ -248,10 +249,10 @@ function App() {
       style:{ display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(110px,1fr))",gap:"10px",marginBottom:"16px" }
     },
       [
-        { label:"Unikalne karty", val:results.length, tier:null },
+        { label:"Unique Cards", val:results.length, tier:null },
         { label:"Top 500 EDHREC", val:top500, tier:TIERS[0] },
-        { label:"Średni rank",    val:avgRank.toLocaleString("pl-PL"), tier:null },
-        { label:"Bez ranku EDH", val:results.length-withRank.length, tier:null },
+        { label:"Average Rank",    val:avgRank.toLocaleString("pl-PL"), tier:null },
+        { label:"No Rank", val:results.length-withRank.length, tier:null },
       ].map(({ label,val,tier })=>React.createElement("div",{
         key:label,
         style:{
@@ -265,14 +266,14 @@ function App() {
     ),
 
     React.createElement("div",{ style:{ display:"flex",gap:"6px",flexWrap:"wrap",marginBottom:"12px",alignItems:"center" } },
-      React.createElement("span",{ style:{ fontSize:"11px",color:"var(--color-text-secondary)",marginRight:"2px" } },"Ranki:"),
+      React.createElement("span",{ style:{ fontSize:"11px",color:"var(--color-text-secondary)",marginRight:"2px" } },"Ranks:"),
       ...TIERS.map(t=>React.createElement("span",{
         key:t.label,
         style:{ fontSize:"11px",padding:"2px 9px",borderRadius:"999px",background:t.bg,color:t.text,fontWeight:"500" }
       }, t.label+" "+t.range)),
       React.createElement("span",{
         style:{ fontSize:"11px",padding:"2px 9px",borderRadius:"999px",background:"var(--color-background-secondary)",color:"var(--color-text-secondary)",fontWeight:"500" }
-      }, "Bez ranku")
+      }, "No rank")
     ),
 
     React.createElement("div",{ style:{ display:"flex",gap:"8px",flexWrap:"wrap",alignItems:"center",marginBottom:"12px" } },
@@ -283,17 +284,17 @@ function App() {
         }}),
         React.createElement("input",{
           value:filter, onChange:e=>setFilter(e.target.value),
-          placeholder:"Szukaj po nazwie...",
-          "aria-label":"Filtruj karty po nazwie",
+          placeholder:"Search by name...",
+          "aria-label":"Filter cards by name",
           style:{ paddingLeft:"32px",width:"200px" }
         })
       ),
-      React.createElement("span",{ style:{ fontSize:"13px",color:"var(--color-text-secondary)" }}, sorted.length+" kart"),
+      React.createElement("span",{ style:{ fontSize:"13px",color:"var(--color-text-secondary)" }}, sorted.length+" cards"),
       React.createElement("button",{ onClick:exportCSV, style:{ marginLeft:"auto" } },
-        React.createElement("i",{ className:"ti ti-download","aria-hidden":"true",style:{ marginRight:"6px" }}), "Eksportuj CSV"
+        React.createElement("i",{ className:"ti ti-download","aria-hidden":"true",style:{ marginRight:"6px" }}), "Export CSV"
       ),
       React.createElement("button",{ onClick:()=>{ setPhase("upload"); setResults([]); setFilter(""); }},
-        React.createElement("i",{ className:"ti ti-refresh","aria-hidden":"true",style:{ marginRight:"6px" }}), "Nowy plik"
+        React.createElement("i",{ className:"ti ti-refresh","aria-hidden":"true",style:{ marginRight:"6px" }}), "New File"
       )
     ),
 
@@ -310,10 +311,10 @@ function App() {
           React.createElement("tr",{},
             [
               { key:"edhrec_rank", label:"EDHREC rank" },
-              { key:"name",        label:"Nazwa karty" },
-              { key:"count",       label:"Ilość" },
-              { key:"type_line",   label:"Typ", nosort:true },
-              { key:"colors",      label:"Kolory", nosort:true },
+              { key:"name",        label:"Card Name" },
+              { key:"count",       label:"Count" },
+              { key:"type_line",   label:"Type", nosort:true },
+              { key:"colors",      label:"Colors", nosort:true },
             ].map(col=>React.createElement("th",{
               key:col.key,
               className: col.nosort?"":"th-sort",
@@ -325,7 +326,7 @@ function App() {
         React.createElement("tbody",{},
           sorted.length===0 && React.createElement("tr",{},
             React.createElement("td",{ colSpan:5,style:{ padding:"24px",textAlign:"center",color:"var(--color-text-secondary)",fontSize:"13px" }},
-              "Brak kart pasujących do filtra"
+              "No cards match the filter"
             )
           ),
           sorted.map((card,i)=>React.createElement("tr",{
