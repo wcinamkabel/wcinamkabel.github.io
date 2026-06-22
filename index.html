@@ -9,38 +9,38 @@
   <link rel="stylesheet" href="assets/styles.css">
 </head>
 <body>
-  <header class="site-header">
-    <div class="container">
-      <h1 class="logo"><img src="assets/wcinamwcinam.png" alt="wcinamkabel's tools" class="logo-img"></h1>
-    </div>
-  </header>
 <main class="wrap container">
-<section class="hero">
-  <h2>wcinamtools</h2>
-  <p>A collection of single-purpose tools for MTG</p>
+  <section class="hero hero-main">
+    <img src="assets/wcinamwcinam.png" alt="wcinamkabel's tools" class="hero-logo">
+    <p>Fast, minimal tools for MTG — pick one below.</p>
 
-</main>
-
-
-  <main class="container">
-    <div class="columns">
-      <section class="hero">
-        <h2>wcinamkonwerter</h2>
-        <p>Tool for transfering moxfield decklists to archidekt while preserving your tags</p>
-        <p><a class="btn-primary" href="tools/wcinamkonwerter.html">Open Converter</a></p>
-      </section>
-      <section class="hero">
-        <h2>bulkranking</h2>
-        <p>Tool for ranking MTG collections based on EDHREC data — upload CSV, fetch rankings from Scryfall.</p>
-        <p><a class="btn-primary" href="tools/bulkranking.html">Open Ranking Tool</a></p>
-      </section>
+    <div class="tools-grid">
+      <a href="tools/wcinamkonwerter.html" class="tool-button">
+        <span class="tool-name">wcinamkonwerter</span>
+        <span class="tool-tagline">Moxfield to Archidekt decklist converter</span>
+      </a>
+      <a href="tools/bulkranking.html" class="tool-button">
+        <span class="tool-name">bulkranking</span>
+        <span class="tool-tagline">ranking collection by popularity</span>
+      </a>
     </div>
-  </main>
+  </section>
+</main>
 
   <footer class="site-footer">
     <div class="container foot-inner">
-      <p>Made with ❤️ by abel</p>
+      <a href="https://github.com/wcinamkabel/wcinamkabel.github.io">Made with ❤️ by abel</a>
     </div>
   </footer>
+
+<script>
+  // Smooth interaction handling
+  const toolButtons = document.querySelectorAll('.tool-button');
+  toolButtons.forEach(btn => {
+    btn.addEventListener('mousedown', e => btn.classList.add('active'));
+    btn.addEventListener('mouseup', () => btn.classList.remove('active'));
+    btn.addEventListener('mouseleave', () => btn.classList.remove('active'));
+  });
+</script>
 </body>
 </html>

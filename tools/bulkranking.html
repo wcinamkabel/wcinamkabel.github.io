@@ -12,15 +12,15 @@
 
 <header class="site-header">
   <div class="container">
-    <a class="back-link" href="../index.html">← Strona główna</a>
-    <h1 class="logo"><img src="../assets/wcinamwcinam.png" alt="wcinamkabel's tools" class="logo-img"></h1>
+    <a class="home-button" href="../index.html">← Home</a>
+    <a class="logo" href="../index.html"><img src="../assets/wcinamwcinam.png" alt="wcinamkabel's tools" class="logo-img"></a>
   </div>
 </header>
 
 <div class="wrap container">
   <section class="hero">
     <h2>How does it work?</h2>
-    <p>This tool works by uploading a CSV file of your Magic: The Gathering collection, fetching popularity rankings from EDHREC, and sorting your cards by popularity.</p>
+    <p>This tool works by uploading a CSV file of your Magic: The Gathering collection, fetching popularity rankings from  <a href="https://edhrec.com/">EDHREC</a>, and sorting your cards by popularity.</p>
   </section>
 
   <div class="panel">
@@ -29,7 +29,7 @@
 
   <footer class="site-footer">
     <div class="container foot-inner">
-      <p>Made with ❤️ by abel</p>
+ <a href="https://github.com/wcinamkabel/wcinamkabel.github.io">Made with ❤️ by abel</a>
     </div>
   </footer>
 </div>
@@ -349,4 +349,17 @@ function App() {
 }
 
 ReactDOM.render(React.createElement(App), document.getElementById("root"));
+
+// Button animations
+setTimeout(() => {
+  const allButtons = document.querySelectorAll('button');
+  const homeBtn = document.querySelector('.home-button');
+  const elementsToAnimate = [...allButtons, homeBtn].filter(el => el);
+
+  elementsToAnimate.forEach(el => {
+    el.addEventListener('mousedown', () => el.classList.add('active'));
+    el.addEventListener('mouseup', () => el.classList.remove('active'));
+    el.addEventListener('mouseleave', () => el.classList.remove('active'));
+  });
+}, 100);
 </script>

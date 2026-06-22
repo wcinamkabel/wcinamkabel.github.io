@@ -11,8 +11,8 @@
 <body>
   <header class="site-header">
   <div class="container">
-    <a class="back-link" href="../index.html">← Home</a>
-    <h1 class="logo"><img src="../assets/wcinamwcinam.png" alt="wcinamkabel's tools" class="logo-img"></h1>
+    <a class="home-button" href="../index.html">← Home</a>
+    <a class="logo" href="../index.html"><img src="../assets/wcinamwcinam.png" alt="wcinamkabel's tools" class="logo-img"></a>
   </div>
 </header>
 
@@ -78,7 +78,7 @@
 
 <footer class="site-footer">
   <div class="container foot-inner">
-    <p> Made with ❤️ by abel </p>
+ <a href="https://github.com/wcinamkabel/wcinamkabel.github.io">Made with ❤️ by abel</a>
   </div>
 </footer>
 
@@ -397,6 +397,17 @@ Maybeboard
 
   render();
 })();
+
+// Button animations
+const allButtons = document.querySelectorAll('button');
+const homeBtn = document.querySelector('.home-button');
+const elementsToAnimate = [...allButtons, homeBtn].filter(el => el);
+
+elementsToAnimate.forEach(el => {
+  el.addEventListener('mousedown', () => el.classList.add('active'));
+  el.addEventListener('mouseup', () => el.classList.remove('active'));
+  el.addEventListener('mouseleave', () => el.classList.remove('active'));
+});
 </script>
 </body>
 </html>
