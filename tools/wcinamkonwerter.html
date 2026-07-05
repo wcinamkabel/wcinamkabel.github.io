@@ -19,7 +19,7 @@
 <div class="wrap container">
   <section class="hero">
     <h2>How does it work?</h2>
-    <p>This tool allows you to convert decklists from Moxfield into a format suitable for importing into Archidekt, preserving tags as categories.</p>
+    <p>This tool lets you convert decklists both ways: from Moxfield to Archidekt and from Archidekt to Moxfield, while preserving tags as categories.</p>
   </section>
 
   <div class="columns">
@@ -151,6 +151,67 @@
     return name.replace(/\s*(?<!\/)\/(?!\/)\s*/g, ' // ').replace(/\s{2,}/g, ' ').trim();
   }
 
+  function looksLikeArchidekt(raw){
+    const lines = raw.split(/\r?\n/).filter(l => l.trim().length > 0);
+    if (!lines.length) return false;
+    const hasBracketCategory = /\[[^\]]+\]/.test(raw);
+    const hasHashTag = /(^|\s)#/.test(raw);
+    const hasQtyPrefix = /^\s*(\d+)\s*(?:x\s*)?/m.test(raw);
+    return hasBracketCategory && !hasHashTag && hasQtyPrefix;
+  }
+
+  function parseArchidektBlock(raw){
+    const lines = raw.split(/\r?\n/).filter(l => l.trim().length > 0);
+    const cards = [];
+    const warnings = [];
+
+    for (const rawLine of lines){
+      const line = rawLine.trim();
+      if (!line) continue;
+
+      const qtyMatch = line.match(/^(\d+)\s*(?:x\s*)?(.*)$/i);
+      if (!qtyMatch){
+        warnings.push(line);
+        continue;
+      }
+
+      const qty = parseInt(qtyMatch[1], 10) || 1;
+      let rest = qtyMatch[2].trim();
+      let categories = [];
+      const categoryMatch = rest.match(/^(.*)\s\[([^\]]+)\]\s*$/);
+      if (categoryMatch){
+        rest = categoryMatch[1].trim();
+        categories = categoryMatch[2].split(',').map(c => c.trim()).filter(Boolean);
+      }
+
+      let set = null;
+      let collector = null;
+      let name = rest;
+      const setCollectorMatch = rest.match(/^(.*)\s\(([A-Za-z0-9]{2,6})\)\s*([A-Za-z0-9★]+)?$/);
+      if (setCollectorMatch){
+        name = setCollectorMatch[1].trim();
+        set = setCollectorMatch[2].toLowerCase();
+        collector = setCollectorMatch[3] || null;
+      }
+
+      const normalizedName = normalizeDFCName(name);
+      if (!normalizedName) continue;
+
+      cards.push({
+        qty,
+        name: normalizedName,
+        set,
+        collector,
+        foil: false,
+        alter: false,
+        tags: categories.map(c => ({ name: c, global: false })),
+        section: categories.some(c => /commander/i.test(c)) ? 'commander' : 'deck'
+      });
+    }
+
+    return { cards, warnings };
+  }
+
   function parseTextBlock(raw){
     const lines = raw.split(/\r?\n/);
     const cards = [];
@@ -278,6 +339,23 @@
     return line;
   }
 
+  function buildMoxfieldLine(card, opts){
+    let line = card.qty + ' ' + card.name;
+    if (opts.includeSetCollector && card.set){
+      line += ' (' + card.set + ')';
+      if (card.collector) line += ' ' + card.collector;
+    }
+    let tagNames = card.tags.map(t => sanitizeCategory(t.name)).filter(Boolean);
+    if (opts.commanderTag && card.section === 'commander'){
+      tagNames.push('Commander');
+    }
+    tagNames = dedupe(tagNames);
+    if (tagNames.length){
+      line += ' ' + tagNames.map(t => '#' + t).join(' ');
+    }
+    return line;
+  }
+
   function render(){
     const raw = inputEl.value;
     if (!raw.trim()){
@@ -289,20 +367,26 @@
     }
 
     const fmt = formatSelect.value;
-    const useCSV = fmt === 'csv' || (fmt === 'auto' && looksLikeCSV(raw));
-    const { cards, warnings } = useCSV ? parseCSVBlock(raw) : parseTextBlock(raw);
+    const looksArchidektInput = looksLikeArchidekt(raw);
+    const useCSV = !looksArchidektInput && (fmt === 'csv' || (fmt === 'auto' && looksLikeCSV(raw)));
+    const { cards, warnings } = looksArchidektInput
+      ? parseArchidektBlock(raw)
+      : useCSV
+        ? parseCSVBlock(raw)
+        : parseTextBlock(raw);
 
     const opts = {
       includeSetCollector: optSetCollector.checked,
       commanderTag: optCommanderTag.checked
     };
 
-    const outLines = cards.map(c => buildOutputLine(c, opts));
+    const outLines = cards.map(c => looksArchidektInput ? buildMoxfieldLine(c, opts) : buildOutputLine(c, opts));
     outputEl.value = outLines.join('\n');
 
     const totalCards = cards.reduce((s, c) => s + c.qty, 0);
     const allTags = dedupe(cards.flatMap(c => c.tags.map(t => sanitizeCategory(t.name))).filter(Boolean));
     statsEl.innerHTML =
+      'Mode: <b>' + (looksArchidektInput ? 'Archidekt → Moxfield' : 'Moxfield → Archidekt') + '</b> &nbsp;·&nbsp; ' +
       'Recognized entries: <b>' + cards.length + '</b> &nbsp;·&nbsp; ' +
       'Total cards: <b>' + totalCards + '</b> &nbsp;·&nbsp; ' +
       'Unique tags: <b>' + allTags.length + '</b>' +
